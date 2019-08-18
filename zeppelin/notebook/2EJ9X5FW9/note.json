@@ -1,0 +1,358 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n## Number of leads",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:40:10.197",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch2\u003eNumber of leads\u003c/h2\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410195_-1333193594",
+      "id": "20190818-133234_969981732",
+      "dateCreated": "2019-08-18 16:40:10.196",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Code\n\nTo run this code please click on the \"Play\" button on the cell below. Results will be printed as part of the cell output (ensure you click on `Show outputs` on the top right corner of the cell).",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:53:07.071",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eCode\u003c/h3\u003e\n\u003cp\u003eTo run this code please click on the \u0026ldquo;Play\u0026rdquo; button on the cell below. Results will be printed as part of the cell output (ensure you click on \u003ccode\u003eShow outputs\u003c/code\u003e on the top right corner of the cell).\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410200_964497910",
+      "id": "20190818-133701_132551369",
+      "dateCreated": "2019-08-18 16:40:10.200",
+      "dateStarted": "2019-08-18 16:53:07.080",
+      "dateFinished": "2019-08-18 16:53:08.487",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%consumer.pyspark\n\n# Number of leads (over last hour and day)\n\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Stop previous streaming context\ntry:\n    ssc.stop(stopSparkContext\u003dTrue, stopGracefully\u003dFalse)\nexcept:\n    pass\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Stream window configuration\n# Reduce last day of data, refreshing every 5 seconds\ntotal_window_last_hour \u003d 3600 # Number of seconds in a hour\ntotal_window_last_day \u003d 86400 # Number of seconds in a day\nrefresh_window \u003d 5\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlead_count_stream \u003d json_stream.map(lambda x: (\u0027leads_count\u0027, 1))\n\n# Count past day\nnum_leads_last_day_stream \u003d lead_count_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_day, refresh_window)\nlast_day_output_stream \u003d num_leads_last_day_stream.map(lambda x: (\u0027last_day_leads_count\u0027, x[1]))\n\n# Count past hour\nnum_leads_last_hour_stream \u003d lead_count_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_hour, refresh_window)\nlast_hour_output_stream \u003d num_leads_last_hour_stream.map(lambda x: (\u0027last_hour_leads_count\u0027, x[1]))\n\n# Print outputs\nlast_hour_output_stream.pprint()\nlast_day_output_stream.pprint()\n\nssc.start()\nssc.awaitTermination()",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:52:14.516",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410201_-332253894",
+      "id": "20190818-133718_304492061",
+      "dateCreated": "2019-08-18 16:40:10.201",
+      "dateStarted": "2019-08-18 16:52:14.658",
+      "dateFinished": "2019-08-18 16:52:46.957",
+      "status": "ABORT",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Top 10 locations with most leads",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:40:10.202",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch2\u003eTop 10 locations with most leads\u003c/h2\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410202_1639130018",
+      "id": "20190818-113052_20572932",
+      "dateCreated": "2019-08-18 16:40:10.202",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Code\n\nTo run this code please click on the \"Play\" button on the cell below. Results will be printed as part of the cell output (ensure you click on `Show outputs` on the top right corner of the cell).",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:53:14.516",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eCode\u003c/h3\u003e\n\u003cp\u003eTo run this code please click on the \u0026ldquo;Play\u0026rdquo; button on the cell below. Results will be printed as part of the cell output (ensure you click on \u003ccode\u003eShow outputs\u003c/code\u003e on the top right corner of the cell).\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410203_1243341168",
+      "id": "20190818-113929_607447379",
+      "dateCreated": "2019-08-18 16:40:10.203",
+      "dateStarted": "2019-08-18 16:53:14.516",
+      "dateFinished": "2019-08-18 16:53:14.546",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%consumer.pyspark\n\n# Top 10 locations with most leads (over last hour and day)\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Stream window configuration\n# Reduce last day of data, refreshing every 5 seconds\ntotal_window_last_hour \u003d 3600 # Number of seconds in a hour\ntotal_window_last_day \u003d 86400 # Number of seconds in a day\nrefresh_window \u003d 5\n\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlocation_stream \u003d json_stream.map(lambda x: (x[\u0027Location\u0027], 1))\n\n# Count past day\nlocation_count_stream_last_day \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_day, refresh_window)\nlast_day_output_stream \u003d location_count_stream_last_day.map(lambda x: (x[0] + \u0027 (Last day)\u0027, x[1]))\n\n# Count past hour\nlocation_count_stream_last_hour \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_hour, refresh_window)\nlast_hour_output_stream \u003d location_count_stream_last_hour.map(lambda x: (x[0] + \u0027 (Last hour)\u0027, x[1]))\n\n\n# Uncomment this to see a running print-out of the stream results\nlast_hour_output_stream.pprint()\nlast_day_output_stream.pprint()\n\nssc.start()\nssc.awaitTermination()",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:57:36.801",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410203_-1646601955",
+      "id": "20190817-115541_2017567947",
+      "dateCreated": "2019-08-18 16:40:10.203",
+      "dateStarted": "2019-08-18 16:57:36.962",
+      "dateFinished": "2019-08-18 16:58:15.681",
+      "status": "ABORT",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Total number of historical leads",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:40:10.205",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch2\u003eTotal number of historical leads\u003c/h2\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410205_-1926383131",
+      "id": "20190818-161148_456701056",
+      "dateCreated": "2019-08-18 16:40:10.205",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Code\n\nTo run this code please click on the \"Play\" button on the cell below. Results will be printed as part of the cell output (ensure you click on `Show outputs` on the top right corner of the cell).",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 16:53:19.646",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch3\u003eCode\u003c/h3\u003e\n\u003cp\u003eTo run this code please click on the \u0026ldquo;Play\u0026rdquo; button on the cell below. Results will be printed as part of the cell output (ensure you click on \u003ccode\u003eShow outputs\u003c/code\u003e on the top right corner of the cell).\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410205_284908754",
+      "id": "20190818-161239_1852847103",
+      "dateCreated": "2019-08-18 16:40:10.205",
+      "dateStarted": "2019-08-18 16:53:19.652",
+      "dateFinished": "2019-08-18 16:53:19.689",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%consumer.pyspark\n\n# Total number of historical leads\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Initial global state\nglobalStateRDD \u003d sc.parallelize([])\n\n# Function to update global state at each interval\ndef updateState(new_values, last_sum):\n    return sum(new_values) + (last_sum or 0)\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlead_count_stream \u003d json_stream.map(lambda x: (\u0027total_leads_count\u0027, 1))\n\n# Count total leads\nnum_leads_stream \u003d lead_count_stream.reduceByKey(lambda x, y: x + y)\nupdate_state_stream \u003d num_leads_stream.updateStateByKey(updateState, initialRDD\u003dglobalStateRDD)\n\n# Uncomment this to see a running print-out of the stream results\nupdate_state_stream.pprint()\n\nssc.start()\nssc.awaitTermination()",
+      "user": "anonymous",
+      "dateUpdated": "2019-08-18 17:02:21.826",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1566146410206_-1549961731",
+      "id": "20190818-161316_1565078673",
+      "dateCreated": "2019-08-18 16:40:10.206",
+      "dateStarted": "2019-08-18 17:00:49.577",
+      "dateFinished": "2019-08-18 17:01:51.604",
+      "status": "ABORT",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "01 PoC Metrics Dashboard (unformatted output)",
+  "id": "2EJ9X5FW9",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "md:shared_process": [],
+    "consumer:shared_process": []
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

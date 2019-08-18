@@ -1,0 +1,29 @@
+kafka:
+    # Note: If you change the Kafka topic here
+    # you will have to change the reference
+    # to it in the docker-compose.yml file
+    broker: "kafka:9092"
+    topic: "test-topic"
+stream:
+    # Max number of seconds to sleep between
+    # messages (can be a real number).
+    # Lower -> more frequent
+    interval: 0.5
+    # Number of seconds to wait for Docker
+    # services on which this producer depends
+    # (e.g. the Kafka broker needs to be up
+    # before the producer can send any messages
+    # to it).
+    wait_for_services: 20
+test_data:
+    n: 1000
+    start_date: "2017-08-19"
+    end_date: "2017-09-20"
+    locations:
+        - "Abu Dhabi"
+        - "Ajman"
+        - "Fujairah"
+        - "Ras al-Khaimah"
+        - "Sharjah"
+        - "Umm al-Quwain"
+

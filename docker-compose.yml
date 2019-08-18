@@ -1,0 +1,40 @@
+version: '3'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_CREATE_TOPICS: "test-topic:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  producer:
+    image: python:3.6
+    build:
+      context: ./producer
+    depends_on:
+      - kafka
+
+  zeppelin:
+    image: apache/zeppelin:0.8.1
+    ports:
+      - "8080:8080"
+    links:
+      - kafka:kafka
+    depends_on:
+      - kafka
+    environment:
+      ZEPPELIN_LOG_DIR: /logs
+      ZEPPELIN_NOTEBOOK_DIR: /notebook
+    volumes:
+      - ./zeppelin/logs:/logs
+      - ./zeppelin/notebook:/notebook
+      - ./zeppelin/conf:/zeppelin/conf

@@ -1,0 +1,5 @@
+kafka-python==1.4.6
+pandas==0.24.2
+pyyaml==5.1.1
+HiYaPyCo==0.4.14
+Faker==2.0.0
