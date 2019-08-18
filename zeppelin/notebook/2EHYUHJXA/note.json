@@ -85,7 +85,7 @@
     {
       "text": "%consumer.pyspark\n\n# Number of leads (over last hour and day)\n\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Stop previous streaming context\ntry:\n    ssc.stop(stopSparkContext\u003dTrue, stopGracefully\u003dFalse)\nexcept:\n    pass\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Stream window configuration\n# Reduce last day of data, refreshing every 5 seconds\ntotal_window_last_hour \u003d 3600 # Number of seconds in a hour\ntotal_window_last_day \u003d 86400 # Number of seconds in a day\nrefresh_window \u003d 5\n\n# Functions for refreshing the output tables being\n# read and visualised in another cell below\ndef refreshDailyOutputs(rdd):\n    df \u003d rdd.toDF([\"desc\", \"num_leads_last_day\"])\n    df.createOrReplaceTempView(\"num_leads_last_day\")\n\ndef refreshHourlyOutputs(rdd):\n    df \u003d rdd.toDF([\"desc\", \"num_leads_last_hour\"])\n    df.createOrReplaceTempView(\"num_leads_last_hour\")\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlead_count_stream \u003d json_stream.map(lambda x: (\u0027leads_count\u0027, 1))\n\n# Count past day\nnum_leads_last_day_stream \u003d lead_count_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_day, refresh_window)\nnum_leads_last_day_stream.foreachRDD(refreshDailyOutputs)\n\n# Count past hour\nnum_leads_last_hour_stream \u003d lead_count_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_hour, refresh_window)\nnum_leads_last_hour_stream.foreachRDD(refreshHourlyOutputs)\n\n# Trigger production of results in cell below\nz.z.run(\"20190818-141555_1590036974\")\n\nssc.start()\nssc.awaitTermination()",
       "user": "anonymous",
-      "dateUpdated": "2019-08-18 17:04:15.776",
+      "dateUpdated": "2019-08-18 22:49:14.257",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -98,8 +98,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/python",
-        "editorHide": false,
-        "tableHide": false
+        "editorHide": true,
+        "tableHide": true
       },
       "settings": {
         "params": {},
@@ -109,9 +109,9 @@
       "jobName": "paragraph_1566135438950_72474495",
       "id": "20190818-133718_304492061",
       "dateCreated": "2019-08-18 13:37:18.950",
-      "dateStarted": "2019-08-18 16:00:10.204",
-      "dateFinished": "2019-08-18 16:01:17.000",
-      "status": "ABORT",
+      "dateStarted": "2019-08-18 22:36:27.023",
+      "dateFinished": "2019-08-18 22:36:27.983",
+      "status": "ERROR",
       "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
@@ -187,8 +187,8 @@
       "jobName": "paragraph_1566137755964_-1955808133",
       "id": "20190818-141555_1590036974",
       "dateCreated": "2019-08-18 14:15:55.964",
-      "dateStarted": "2019-08-18 16:00:24.122",
-      "dateFinished": "2019-08-18 16:01:21.213",
+      "dateStarted": "2019-08-18 22:36:27.937",
+      "dateFinished": "2019-08-18 22:36:35.525",
       "status": "ABORT",
       "progressUpdateIntervalMs": 500
     },
@@ -365,9 +365,9 @@
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%consumer.pyspark\n\n# Top 10 locations with most leads (over last hour and day)\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Stream window configuration\n# Reduce last day of data, refreshing every 5 seconds\ntotal_window_last_hour \u003d 3600 # Number of seconds in a hour\ntotal_window_last_day \u003d 86400 # Number of seconds in a day\nrefresh_window \u003d 5\n\n# Functions for refreshing the output tables being\n# read and visualised in another cell below\ndef refreshDailyOutputs(rdd):\n    sorted_rdd \u003d rdd.sortBy(lambda x: x[1], ascending\u003dFalse)\n    df \u003d sorted_rdd.toDF([\"location\", \"lead_count_last_day\"])\n    df.createOrReplaceTempView(\"top_ten_locations_last_day\")\n\ndef refreshHourlyOutputs(rdd):\n    sorted_rdd \u003d rdd.sortBy(lambda x: x[1], ascending\u003dFalse)\n    df \u003d sorted_rdd.toDF([\"location\", \"lead_count_last_hour\"])\n    df.createOrReplaceTempView(\"top_ten_locations_last_hour\")\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlocation_stream \u003d json_stream.map(lambda x: (x[\u0027Location\u0027], 1))\n\n# Count past day\nlocation_count_stream_last_day \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_day, refresh_window)\nlocation_count_stream_last_day.foreachRDD(refreshDailyOutputs)\n\n# Count past hour\nlocation_count_stream_last_hour \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_hour, refresh_window)\nlocation_count_stream_last_hour.foreachRDD(refreshHourlyOutputs)\n\n# Trigger production of results in cell below\nz.z.run(\"20190818-103955_1732373725\")\n\nssc.start()\nssc.awaitTermination()",
+      "text": "%consumer.pyspark\n\n# Top 10 locations with most leads (over last hour and day)\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Stream window configuration\n# Reduce last day of data, refreshing every 5 seconds\ntotal_window_last_hour \u003d 3600 # Number of seconds in a hour\ntotal_window_last_day \u003d 86400 # Number of seconds in a day\nrefresh_window \u003d 5\n\n# Functions for refreshing the output tables being\n# read and visualised in another cell below\ndef refreshDailyOutputs(rdd):\n    sorted_rdd \u003d rdd.sortBy(lambda x: x[1], ascending\u003dFalse)\n    df \u003d sorted_rdd.toDF([\"location\", \"lead_count_last_day\"]).limit(10)\n    df.createOrReplaceTempView(\"top_ten_locations_last_day\")\n\ndef refreshHourlyOutputs(rdd):\n    sorted_rdd \u003d rdd.sortBy(lambda x: x[1], ascending\u003dFalse)\n    df \u003d sorted_rdd.toDF([\"location\", \"lead_count_last_hour\"]).limit(10)\n    df.createOrReplaceTempView(\"top_ten_locations_last_hour\")\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlocation_stream \u003d json_stream.map(lambda x: (x[\u0027Location\u0027], 1))\n\n# Count past day\nlocation_count_stream_last_day \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_day, refresh_window)\nlocation_count_stream_last_day.foreachRDD(refreshDailyOutputs)\n\n# Count past hour\nlocation_count_stream_last_hour \u003d location_stream.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, total_window_last_hour, refresh_window)\nlocation_count_stream_last_hour.foreachRDD(refreshHourlyOutputs)\n\n# Trigger production of results in cell below\nz.z.run(\"20190818-103955_1732373725\")\n\nssc.start()\nssc.awaitTermination()",
       "user": "anonymous",
-      "dateUpdated": "2019-08-18 17:04:58.311",
+      "dateUpdated": "2019-08-18 22:49:36.562",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -380,8 +380,8 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/python",
-        "editorHide": false,
-        "tableHide": true
+        "editorHide": true,
+        "tableHide": false
       },
       "settings": {
         "params": {},
@@ -391,8 +391,8 @@
       "jobName": "paragraph_1566042941368_67767926",
       "id": "20190817-115541_2017567947",
       "dateCreated": "2019-08-17 11:55:41.368",
-      "dateStarted": "2019-08-18 13:27:23.565",
-      "dateFinished": "2019-08-18 12:57:00.992",
+      "dateStarted": "2019-08-18 22:46:09.606",
+      "dateFinished": "2019-08-18 22:47:19.119",
       "status": "ABORT",
       "errorMessage": "",
       "progressUpdateIntervalMs": 500
@@ -461,14 +461,22 @@
         "params": {},
         "forms": {}
       },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "io.grpc.StatusRuntimeException: UNAVAILABLE: HTTP/2 error code: NO_ERROR\nReceived Goaway\nServer shutdown\n\tat io.grpc.Status.asRuntimeException(Status.java:543)\n\tat io.grpc.stub.ClientCalls$StreamObserverToCallListenerAdapter.onClose(ClientCalls.java:395)\n\tat io.grpc.internal.ClientCallImpl.closeObserver(ClientCallImpl.java:426)\n\tat io.grpc.internal.ClientCallImpl.access$100(ClientCallImpl.java:76)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.close(ClientCallImpl.java:512)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl.access$700(ClientCallImpl.java:429)\n\tat io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1StreamClosed.runInContext(ClientCallImpl.java:544)\n\tat io.grpc.internal.ContextRunnable.run(ContextRunnable.java:52)\n\tat io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:117)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\n\tat java.lang.Thread.run(Thread.java:748)\n"
+          }
+        ]
+      },
       "apps": [],
       "jobName": "paragraph_1566124795942_-1428116855",
       "id": "20190818-103955_1732373725",
       "dateCreated": "2019-08-18 10:39:55.942",
-      "dateStarted": "2019-08-18 13:27:41.844",
-      "dateFinished": "2019-08-18 13:21:53.204",
-      "status": "ABORT",
-      "errorMessage": "",
+      "dateStarted": "2019-08-18 22:46:29.529",
+      "dateFinished": "2019-08-18 22:47:38.201",
+      "status": "ERROR",
       "progressUpdateIntervalMs": 500
     },
     {
@@ -545,7 +553,7 @@
         "msg": [
           {
             "type": "TABLE",
-            "data": "location\tlead_count_last_hour\tlead_count_last_day\nUmm al-Quwain\t43\t83\nAjman\t39\t80\nSharjah\t35\t61\nRas al-Khaimah\t31\t73\nAbu Dhabi\t38\t74\nFujairah\t44\t88\n"
+            "data": "location\tlead_count_last_hour\tlead_count_last_day\nAbu Dhabi\t56\t56\nAjman\t49\t49\nRas al-Khaimah\t43\t43\nFujairah\t42\t42\nSharjah\t42\t42\nUmm al-Quwain\t33\t33\n"
           },
           {
             "type": "TEXT",
@@ -557,8 +565,8 @@
       "jobName": "paragraph_1566051530181_822782418",
       "id": "20190817-141850_391467151",
       "dateCreated": "2019-08-17 14:18:50.181",
-      "dateStarted": "2019-08-18 13:31:11.915",
-      "dateFinished": "2019-08-18 13:31:13.903",
+      "dateStarted": "2019-08-18 22:47:37.284",
+      "dateFinished": "2019-08-18 22:47:37.602",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -647,7 +655,7 @@
     {
       "text": "%consumer.pyspark\n\n# Total number of historical leads\n\nimport json\n\nfrom pyspark.streaming.kafka import KafkaUtils\nfrom pyspark.streaming import StreamingContext\n\n# Create streaming context\nssc \u003d StreamingContext(sc, batchDuration\u003d5)\nssc.checkpoint(\"checkpoint\")\n\n# Kafka configuration\nkafka_topic \u003d \"test-topic\"\nkafka_broker \u003d \"kafka:9092\"\n\n# Initial global state\nglobalStateRDD \u003d sc.parallelize([])\n\n# Function to update global state at each interval\ndef updateState(new_values, last_sum):\n    return sum(new_values) + (last_sum or 0)\n\n# Functions for refreshing the output tables being\n# read and visualised in another cell below\ndef refreshOutputs(rdd):\n    df \u003d rdd.toDF([\"desc\", \"total_num_leads\"])\n    df.createOrReplaceTempView(\"total_num_leads\")\n\n# Process stream\nstream \u003d KafkaUtils.createDirectStream(ssc, [kafka_topic], {\"metadata.broker.list\": kafka_broker})\njson_stream \u003d stream.map(lambda x: json.loads(x[1]))\nlead_count_stream \u003d json_stream.map(lambda x: (\u0027leads_count\u0027, 1))\n\n# Count past day\nnum_leads_stream \u003d lead_count_stream.reduceByKey(lambda x, y: x + y)\nupdate_state_stream \u003d num_leads_stream.updateStateByKey(updateState, initialRDD\u003dglobalStateRDD)\nupdate_state_stream.foreachRDD(refreshOutputs)\n\n# Trigger production of results in cell below\nz.z.run(\"20190818-161459_253068110\")\n\nssc.start()\nssc.awaitTermination()",
       "user": "anonymous",
-      "dateUpdated": "2019-08-18 17:06:05.519",
+      "dateUpdated": "2019-08-18 22:49:39.283",
       "config": {
         "colWidth": 12.0,
         "fontSize": 9.0,
@@ -660,7 +668,7 @@
           "completionSupport": true
         },
         "editorMode": "ace/mode/python",
-        "editorHide": false,
+        "editorHide": true,
         "tableHide": true
       },
       "settings": {
