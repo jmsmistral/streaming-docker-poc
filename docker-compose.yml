@@ -38,3 +38,4 @@ services:
       - ./zeppelin/logs:/logs
       - ./zeppelin/notebook:/notebook
       - ./zeppelin/conf:/zeppelin/conf
+      - ./zeppelin/jars:/zeppelin/jars
